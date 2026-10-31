@@ -1,13 +1,5 @@
-MOCHI STUDY — files for a small installable web app
-
-This folder contains:
-- index.html: app interface and features
-- manifest.webmanifest: install metadata
-- sw.js: offline cache service worker
-- icon.svg: app icon
-
-The app is designed for static HTTPS hosting (for example GitHub Pages). It is not yet published online.
-Open index.html locally to preview basic features, but PWA installation and offline caching require HTTPS hosting or localhost.
-Data is stored in the browser's localStorage on the device. Use “Экспортировать резервную копию” periodically.
-The AI button opens ChatGPT; it does not include a paid API or automatic AI processing inside the app.
-The timetable is intentionally not prefilled from the screenshot: the screenshot's tiny merged cells need a careful confirmed transcription to avoid wrong class times. Add/edit entries in the schedule section for now.
+Mochi Study v2 🍡
+Функции: недельное расписание с датами/временем/кабинетами; задания и дедлайны; два словаря (выученные и ДЗ); прикрепление фото к словам; интервальное повторение 1/3/7/14/30/60 дней; уведомление при открытом приложении; экспорт/импорт резервной копии.
+Ограничения: фото прикрепляется к записи, автоматического OCR китайского нет. Настоящий Android home-screen widget требует нативного APK; в приложении есть карточка ближайшей пары. Уведомления проверяются, пока приложение открыто; гарантированные фоновые уведомления требуют нативной реализации. ИИ открывает ChatGPT отдельно.
+Данные локальные в браузере. Делайте резервные копии. В расписании есть названия занятий из обсуждения; время и кабинеты не выдуманы.
+Обновление: замените файлы в корне GitHub-репозитория файлами из архива. GitHub Pages обновит сайт. Не очищайте данные сайта: localStorage сохраняет записи.
