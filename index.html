@@ -1,5 +1,36 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f8eaf0"><link rel="manifest" href="manifest.webmanifest"><title>Mochi Study 🍡</title>
-<style>
+<style>.mochi-ai-history {
+  white-space: pre-wrap;
+  background: #fff8fb;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 12px;
+  margin: 10px 0;
+  min-height: 72px;
+  max-height: 320px;
+  overflow: auto;
+}
+.mochi-ai-history p {
+  margin: 7px 0;
+  line-height: 1.5;
+}
+.mochi-ai-user {
+  font-weight: 650;
+}
+.mochi-ai-assistant {
+  font-weight: 400;
+}
+textarea {
+  font: inherit;
+  color: var(--ink);
+  background: #fffafd;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  width: 100%;
+  margin: 4px 0;
+  resize: vertical;
+}
 :root{--bg:#fff8fb;--ink:#514653;--muted:#9a8998;--pink:#f2c7d8;--lav:#e9e0f7;--mint:#dcefe7;--line:#f0e4eb}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fff8fb,#f7f4ff);color:var(--ink);font:15px system-ui;padding-bottom:82px}header,main{max-width:800px;margin:auto;padding:18px 14px}h1{margin:0;font-size:26px}h2{font-size:19px;margin:0 0 10px}h3{font-size:15px;margin:0 0 7px}.muted{color:var(--muted);font-size:12px}.card{background:white;border:1px solid var(--line);border-radius:19px;padding:15px;margin:10px 0;box-shadow:0 7px 22px #72536c0c}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1;min-width:0}input,select{font:inherit;color:var(--ink);background:#fffafd;border:1px solid var(--line);border-radius:12px;padding:10px;width:100%;margin:4px 0}button{font:inherit;cursor:pointer}.primary{border:0;background:var(--pink);border-radius:12px;padding:10px 14px;color:var(--ink);font-weight:650}.soft{border:1px solid var(--line);background:#fffafd;border-radius:12px;padding:8px 11px;color:var(--ink)}.tiny{font-size:12px;padding:6px 9px}.danger{border:0;background:none;color:#b66b83}.tab{display:none}.tab.active{display:block}nav{position:fixed;bottom:0;left:0;right:0;background:#fffdfd;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:7px 2px calc(7px + env(safe-area-inset-bottom));z-index:5}nav button{border:0;background:none;color:var(--muted);font-size:11px;padding:7px;border-radius:12px}nav button.active{background:var(--lav);color:var(--ink)}.day{border:1px solid var(--line);border-radius:15px;padding:11px;margin:8px 0;background:#fffdfd}.lesson,.task,.word{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--line);padding:9px 0}.lesson strong,.task strong,.word strong{display:block}.empty{color:var(--muted);font-size:13px;padding:8px 0}.today{background:linear-gradient(120deg,#fff0f5,#f1ebfb)}.big{font-size:20px;font-weight:750}.stat{background:#fffafd;border-radius:13px;padding:10px;text-align:center;flex:1}.stat b{display:block;font-size:20px}.switch{display:flex;background:#f8f1f6;border-radius:12px;padding:4px}.switch button{flex:1;border:0;background:none;padding:9px;border-radius:10px}.switch button.active{background:white}.photo{width:65px;height:65px;object-fit:cover;border-radius:10px}.widephoto{max-width:100%;max-height:230px;object-fit:contain}dialog{border:0;border-radius:18px;width:calc(100% - 30px);max-width:440px;color:var(--ink)}dialog::backdrop{background:#49394b66}
 </style></head><body><header><h1>Mochi Study 🍡</h1><div class="muted">Твой уютный учебный планер · Китайский язык</div></header><main>
 <section id="home" class="tab active"><div class="card today"><div id="todayDate" class="muted"></div><h2>Ближайшая пара</h2><div id="nextLesson" class="big">Добавь расписание ✨</div></div><div class="row"><div class="stat"><b id="taskCount">0</b><span class="muted">заданий</span></div><div class="stat"><b id="dueCount">0</b><span class="muted">слов повторить</span></div><div class="stat"><b id="learnedCount">0</b><span class="muted">выучено</span></div></div><div class="card"><h2>Занятия сегодня</h2><div id="todayLessons"></div></div><div class="card"><h2>Слова на повторение</h2><div id="homeDue"></div><button class="soft" onclick="tab('review')">Перейти к повторению →</button></div></section>
