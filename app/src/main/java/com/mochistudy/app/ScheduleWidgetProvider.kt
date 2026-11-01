@@ -1,11 +1,11 @@
 package com.mochistudy.app
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.app.PendingIntent
 import android.widget.RemoteViews
 import org.json.JSONArray
 import java.text.SimpleDateFormat
@@ -34,26 +34,36 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
             var detail = "Синхронизируй расписание в приложении"
             try {
                 val lessons = JSONArray(raw ?: "[]")
-                var bestTime = "99:99"
+                var bestStart = "99:99"
+                var foundToday = false
                 for (i in 0 until lessons.length()) {
                     val item = lessons.getJSONObject(i)
-                    val date = item.optString("date")
-                    val time = item.optString("time")
-                    if (date == today && time.isNotBlank() && time >= now && time < bestTime) {
-                        bestTime = time
+                    if (item.optString("date") != today) continue
+                    foundToday = true
+                    val fullTime = item.optString("time").trim()
+                    val start = fullTime.substringBefore("–").substringBefore("-").trim()
+                    if (start.matches(Regex("\\d{2}:\\d{2}")) && start >= now && start < bestStart) {
+                        bestStart = start
                         title = item.optString("title", "Занятие")
-                        detail = "$time · ${item.optString("room", "аудитория не указана")}" 
+                        val room = item.optString("room").ifBlank { "аудитория не указана" }
+                        detail = "$fullTime · $room"
                     }
                 }
-                if (bestTime == "99:99" && raw != null) {
-                    title = "На сегодня пар больше нет 🌸"
+                if (bestStart == "99:99" && raw != null) {
+                    title = if (foundToday) "На сегодня пар больше нет 🌸" else "Сегодня занятий нет 🌸"
                     detail = "Хорошего дня!"
                 }
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                title = "Не удалось прочитать расписание"
+                detail = "Открой Mochi Study"
+            }
             views.setTextViewText(R.id.widget_title, title)
             views.setTextViewText(R.id.widget_detail, detail)
             val intent = Intent(context, MainActivity::class.java)
-            val pending = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val pending = PendingIntent.getActivity(
+                context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
             views.setOnClickPendingIntent(R.id.widget_root, pending)
             manager.updateAppWidget(id, views)
         }
