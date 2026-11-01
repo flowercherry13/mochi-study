@@ -16,6 +16,25 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Restore stable Mochi Study signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.MOCHI_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.MOCHI_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.MOCHI_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.MOCHI_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in KEYSTORE_B64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub Actions secret for stable APK signing: $name. See repository Settings > Secrets and variables > Actions."
+              exit 1
+            fi
+          done
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/mochi-study-signing.jks"
+          echo "MOCHI_KEYSTORE_PATH=$RUNNER_TEMP/mochi-study-signing.jks" >> "$GITHUB_ENV"
+          echo "MOCHI_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "MOCHI_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "MOCHI_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
       - name: Build debug APK
         run: gradle assembleDebug
       - uses: actions/upload-artifact@v4
