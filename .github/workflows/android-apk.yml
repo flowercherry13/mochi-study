@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ android-widget-foundation ]
-    paths: [ 'app/**', 'build.gradle', 'settings.gradle', '.github/workflows/android-apk.yml' ]
+    paths: [ 'app/**', 'build.gradle', 'settings.gradle', 'index.html', '.github/workflows/android-apk.yml' ]
 jobs:
   build:
     runs-on: ubuntu-latest
