@@ -9,6 +9,7 @@ import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import org.json.JSONArray
 
 class MainActivity : Activity() {
     private lateinit var webView: WebView
@@ -24,7 +25,10 @@ class MainActivity : Activity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                syncScheduleFromWeb()
+                // The page can still be initializing its schedule; retry after it settles.
+                listOf(0L, 500L, 1500L, 3000L, 6000L).forEach { delay ->
+                    webView.postDelayed({ syncScheduleFromWeb() }, delay)
+                }
             }
         }
         webView.webChromeClient = object : WebChromeClient() {
@@ -53,22 +57,40 @@ class MainActivity : Activity() {
         webView.evaluateJavascript(
             """(function() {
               try {
+                if (!window.MochiAndroid) return 'bridge-missing';
+                var scheduleData = null;
                 var raw = window.localStorage.getItem('mochiStudy');
-                if (!raw || !window.MochiAndroid) return 'no-data-or-bridge';
-                var data = JSON.parse(raw);
-                var lessons = Array.isArray(data) ? data : data.lessons;
-                if (!Array.isArray(lessons)) return 'no-lessons';
+                if (raw) scheduleData = JSON.parse(raw);
+                // The app's top-level `let data` is not necessarily exposed as window.data.
+                if (!scheduleData && typeof data !== 'undefined') scheduleData = data;
+                if (!scheduleData && window.data) scheduleData = window.data;
+                var lessons = Array.isArray(scheduleData) ? scheduleData : (scheduleData && scheduleData.lessons);
+                if (!Array.isArray(lessons)) return raw ? 'no-lessons-in-storage' : 'no-schedule-data-yet';
+                if (!raw) {
+                  try { window.localStorage.setItem('mochiStudy', JSON.stringify(scheduleData)); } catch (ignored) {}
+                }
                 window.MochiAndroid.saveSchedule(JSON.stringify(lessons));
-                return 'synced:' + lessons.length;
-              } catch (e) { return 'sync-error:' + e; }
+                return 'sent:' + lessons.length;
+              } catch (e) { return 'sync-error:' + String(e); }
             })();""",
-            null
+            { result ->
+                val status = result?.trim('"') ?: "no-result"
+                getSharedPreferences("mochi_widget", MODE_PRIVATE).edit()
+                    .putString("sync_status", status)
+                    .putLong("sync_checked_at", System.currentTimeMillis())
+                    .apply()
+                ScheduleWidgetProvider.refreshAll(this)
+            }
         )
     }
 
     override fun onResume() {
         super.onResume()
-        if (::webView.isInitialized) webView.postDelayed({ syncScheduleFromWeb() }, 700)
+        if (::webView.isInitialized) {
+            listOf(300L, 1200L, 3000L).forEach { delay ->
+                webView.postDelayed({ syncScheduleFromWeb() }, delay)
+            }
+        }
     }
 
     @Deprecated("Deprecated in Android, retained for broad device compatibility")
@@ -85,8 +107,19 @@ class MainActivity : Activity() {
     inner class ScheduleBridge {
         @JavascriptInterface
         fun saveSchedule(json: String) {
-            getSharedPreferences("mochi_widget", MODE_PRIVATE).edit().putString("schedule_json", json).apply()
-            runOnUiThread { ScheduleWidgetProvider.refreshAll(this@MainActivity) }
+            try {
+                val lessons = JSONArray(json)
+                getSharedPreferences("mochi_widget", MODE_PRIVATE).edit()
+                    .putString("schedule_json", lessons.toString())
+                    .putString("sync_status", "saved:" + lessons.length())
+                    .putLong("sync_saved_at", System.currentTimeMillis())
+                    .apply()
+                runOnUiThread { ScheduleWidgetProvider.refreshAll(this@MainActivity) }
+            } catch (e: Exception) {
+                getSharedPreferences("mochi_widget", MODE_PRIVATE).edit()
+                    .putString("sync_status", "invalid-json:" + (e.message ?: "parse error"))
+                    .apply()
+            }
         }
     }
 
