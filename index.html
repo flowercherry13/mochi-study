@@ -52,7 +52,8 @@ textarea {
 const $=id=>document.getElementById(id),today=()=>new Date().toISOString().slice(0,10),plus=(s,n)=>{let d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)},fmt=s=>s?new Date(s+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'}):'',esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const starter=[['2026-11-02','Практическая грамматика китайского языка'],['2026-11-02','Основы китайского языка'],['2026-11-02','Русский язык и деловая коммуникация'],['2026-11-03','Китайский язык'],['2026-11-03','Коммуникативный практикум по китайскому языку'],['2026-11-03','Иностранный язык'],['2026-11-04','Физическая культура и спорт'],['2026-11-05','Китайская каллиграфия'],['2026-11-05','Интенсив HSK 5'],['2026-11-05','История России (практическое занятие)'],['2026-11-07','Безопасность жизнедеятельности · дистанционно']];
 let data;try{data=JSON.parse(localStorage.getItem('mochiStudy')||'null')}catch(e){}if(!data||!Array.isArray(data.lessons))data={lessons:starter.map((x,i)=>({id:'s'+i,date:x[0],title:x[1],time:'',room:''})),tasks:[],words:[],reminderTime:'19:00',reminderEnabled:true};data.tasks=data.tasks||[];data.words=data.words||[];let mode='learned',week=today();week=plus(week,-((new Date(week+'T12:00:00').getDay()+6)%7));
-function save(){localStorage.setItem('mochiStudy',JSON.stringify(data))}
+function syncAndroidWidget(){try{if(window.MochiAndroid&&Array.isArray(data.lessons))window.MochiAndroid.saveSchedule(JSON.stringify(data.lessons))}catch(e){console.warn('Mochi Android widget sync failed',e)}}
+function save(){localStorage.setItem('mochiStudy',JSON.stringify(data));syncAndroidWidget()}
 function tab(id){document.querySelectorAll('.tab,nav button').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelector(`[data-id="${id}"]`).classList.add('active');render()}
 function moveWeek(n){week=plus(week,n);renderSchedule()}
 function saveLesson(e){e.preventDefault();data.lessons.push({id:'l'+Date.now(),date:$('ldate').value,title:$('ltitle').value,time:$('ltime').value,room:$('lroom').value});save();lessonDialog.close();e.target.reset();render()}
@@ -75,6 +76,6 @@ function notify(){if(data.reminderEnabled&&'Notification'in window&&Notification
 function backup(){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));a.href=u;a.download='mochi-study-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 function restore(e){let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d.lessons||!d.tasks||!d.words)throw 0;data=d;save();render();alert('Данные восстановлены')}catch(x){alert('Не удалось прочитать файл')}};r.readAsText(e.target.files[0])}
 function render(){renderHome();renderSchedule();renderTasks();renderWords();renderReview();$('reminderTime').value=data.reminderTime||'19:00';$('reminderEnabled').checked=data.reminderEnabled!==false}
-render();notify();setInterval(notify,60000);
+render();syncAndroidWidget();notify();setInterval(notify,60000);
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script><script src="./mochi-ai-helper.js"></script></body></html>
