@@ -3,6 +3,9 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+def mochiKeystorePath = System.getenv('MOCHI_KEYSTORE_PATH')
+def useMochiSigningKey = mochiKeystorePath != null && !mochiKeystorePath.isEmpty()
+
 android {
     namespace 'com.mochistudy.app'
     compileSdk 35
@@ -13,6 +16,22 @@ android {
         targetSdk 35
         versionCode 1
         versionName '0.1.0'
+    }
+
+    signingConfigs {
+        mochiStable {
+            storeFile file(mochiKeystorePath ?: 'mochi-study-signing.jks')
+            storeType 'jks'
+            storePassword System.getenv('MOCHI_KEYSTORE_PASSWORD') ?: ''
+            keyAlias System.getenv('MOCHI_KEY_ALIAS') ?: 'mochi-study'
+            keyPassword System.getenv('MOCHI_KEY_PASSWORD') ?: ''
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig useMochiSigningKey ? signingConfigs.mochiStable : signingConfigs.debug
+        }
     }
 
     compileOptions {
