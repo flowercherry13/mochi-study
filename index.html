@@ -50,8 +50,24 @@ textarea {
 <dialog id="lessonDialog"><form onsubmit="saveLesson(event)"><h2>Новая пара</h2><input id="ltitle" placeholder="Предмет" required><input id="ldate" type="date" required><div class="row"><input id="ltime" type="time"><input id="lroom" placeholder="Кабинет"></div><button class="primary">Сохранить</button><button type="button" class="soft" onclick="lessonDialog.close()">Отмена</button></form></dialog>
 <script>
 const $=id=>document.getElementById(id),today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},plus=(s,n)=>{let d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},fmt=s=>s?new Date(s+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'}):'',esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const starter=[['2026-11-02','Практическая грамматика китайского языка'],['2026-11-02','Основы китайского языка'],['2026-11-02','Русский язык и деловая коммуникация'],['2026-11-03','Китайский язык'],['2026-11-03','Коммуникативный практикум по китайскому языку'],['2026-11-03','Иностранный язык'],['2026-11-04','Физическая культура и спорт'],['2026-11-05','Китайская каллиграфия'],['2026-11-05','Интенсив HSK 5'],['2026-11-05','История России (практическое занятие)'],['2026-11-07','Безопасность жизнедеятельности · дистанционно']];
-let data;try{data=JSON.parse(localStorage.getItem('mochiStudy')||'null')}catch(e){}if(!data||!Array.isArray(data.lessons))data={lessons:starter.map((x,i)=>({id:'s'+i,date:x[0],title:x[1],time:'',room:''})),tasks:[],words:[],reminderTime:'19:00',reminderEnabled:true};data.tasks=data.tasks||[];data.words=data.words||[];let mode='learned';const mondayOf=d=>plus(d,-((new Date(d+'T12:00:00').getDay()+6)%7));let week=localStorage.getItem('mochiSelectedWeek')||mondayOf(today());if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(week))week=mondayOf(today());
+const starter=[
+{id:'wk01',date:'2026-11-02',title:'Основы российской государственности',time:'09:35–10:55',room:'425',teacher:'доц. Калмантаев Н. М.'},
+{id:'wk02',date:'2026-11-02',title:'Практическая грамматика китайского языка',time:'11:35–12:55',room:'Коворкинг',teacher:'Гильманова Л. Р.'},
+{id:'wk03',date:'2026-11-02',title:'Основы китайского языка',time:'13:10–14:30',room:'Коворкинг',teacher:'Гильманова Л. Р.'},
+{id:'wk04',date:'2026-11-02',title:'Русский язык и деловая коммуникация',time:'15:10–16:30',room:'211',teacher:'Аширова Г. А.'},
+{id:'wk05',date:'2026-11-03',title:'Китайский язык',time:'08:00–09:20',room:'404',teacher:'Ванма Хуанг'},
+{id:'wk06',date:'2026-11-03',title:'Китайский язык',time:'09:35–10:55',room:'404',teacher:'Ванма Хуанг'},
+{id:'wk07',date:'2026-11-03',title:'Коммуникативный практикум по китайскому языку',time:'11:35–12:55',room:'404',teacher:'Ванма Хуанг'},
+{id:'wk08',date:'2026-11-03',title:'Иностранный язык',time:'13:10–14:30',room:'419',teacher:'доц. Сираева Р. Т.'},
+{id:'wk09',date:'2026-11-04',title:'Физическая культура и спорт · Спорткомплекс',time:'08:00–09:20',room:'',teacher:''},
+{id:'wk10',date:'2026-11-05',title:'История России',time:'09:35–10:55',room:'425',teacher:'доц. Калмантаев Н. М.'},
+{id:'wk11',date:'2026-11-05',title:'Китайская каллиграфия',time:'11:35–12:55',room:'211',teacher:'Ванма Хуанг'},
+{id:'wk12',date:'2026-11-05',title:'Интенсивный курс HSK 5 (часть 1)',time:'13:10–14:30',room:'211',teacher:'Ванма Хуанг'},
+{id:'wk13',date:'2026-11-05',title:'Интенсивный курс HSK 5 (часть 1)',time:'15:10–16:30',room:'211',teacher:'Ванма Хуанг'},
+{id:'wk14',date:'2026-11-05',title:'История России (практическое занятие)',time:'16:45–18:05',room:'211',teacher:'Салимов В. А.'},
+{id:'wk15',date:'2026-11-07',title:'Безопасность жизнедеятельности · дистанционно',time:'11:00–14:00',room:'',teacher:''}
+];
+let data;try{data=JSON.parse(localStorage.getItem('mochiStudy')||'null')}catch(e){}if(!data||!Array.isArray(data.lessons))data={lessons:starter.map(x=>({...x})),tasks:[],words:[],reminderTime:'19:00',reminderEnabled:true};else if(data.lessons.length===11&&data.lessons.every(x=>!x.time)&&data.lessons.every(x=>String(x.id||'').startsWith('s'))){data.lessons=starter.map(x=>({...x}));localStorage.setItem('mochiStudy',JSON.stringify(data));}data.tasks=data.tasks||[];data.words=data.words||[];let mode='learned';const mondayOf=d=>plus(d,-((new Date(d+'T12:00:00').getDay()+6)%7));let week=localStorage.getItem('mochiSelectedWeek')||mondayOf(today());if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(week))week=mondayOf(today());
 function save(){localStorage.setItem('mochiStudy',JSON.stringify(data))}
 function tab(id){document.querySelectorAll('.tab,nav button').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelector(`[data-id="${id}"]`).classList.add('active');render()}
 function moveWeek(n){week=plus(week,n);localStorage.setItem('mochiSelectedWeek',week);renderSchedule()}
