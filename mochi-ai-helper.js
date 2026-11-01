@@ -2,7 +2,7 @@
 // Этот файл обращается к уже настроенному Cloudflare Worker.
 // Секретный DeepSeek API key хранится только в Cloudflare и сюда не добавляется.
 (() => {
-  const API = "https://mochi-study-api.agnia3333333.workers.dev";
+  const API = "https://mochi-study-api.agniia3333333.workers.dev";
   const box = document.getElementById("mochiAiHistory");
   const input = document.getElementById("mochiAiQuestion");
   const send = document.getElementById("mochiAiSend");
