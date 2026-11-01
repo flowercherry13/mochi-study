@@ -77,4 +77,4 @@ function restore(e){let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.
 function render(){renderHome();renderSchedule();renderTasks();renderWords();renderReview();$('reminderTime').value=data.reminderTime||'19:00';$('reminderEnabled').checked=data.reminderEnabled!==false}
 render();notify();setInterval(notify,60000);
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
-</script></body></html>
+</script><script src="./mochi-ai-helper.js"></script></body></html>
