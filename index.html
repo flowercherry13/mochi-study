@@ -68,7 +68,7 @@ const starter=[
 {id:'wk15',date:'2026-11-07',title:'Безопасность жизнедеятельности · дистанционно',time:'11:00–14:00',room:'',teacher:''}
 ];
 let data;try{data=JSON.parse(localStorage.getItem('mochiStudy')||'null')}catch(e){}if(!data||!Array.isArray(data.lessons))data={lessons:starter.map(x=>({...x})),tasks:[],words:[],reminderTime:'19:00',reminderEnabled:true};else if(data.lessons.length===11&&data.lessons.every(x=>!x.time)&&data.lessons.every(x=>String(x.id||'').startsWith('s'))){data.lessons=starter.map(x=>({...x}));localStorage.setItem('mochiStudy',JSON.stringify(data));}data.tasks=data.tasks||[];data.words=data.words||[];let mode='learned';const mondayOf=d=>plus(d,-((new Date(d+'T12:00:00').getDay()+6)%7));let week=localStorage.getItem('mochiSelectedWeek')||mondayOf(today());if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(week))week=mondayOf(today());
-function save(){localStorage.setItem('mochiStudy',JSON.stringify(data))}
+function syncNativeWidget(){try{if(window.MochiAndroid&&data&&Array.isArray(data.lessons))window.MochiAndroid.saveSchedule(JSON.stringify(data.lessons))}catch(e){}}function save(){localStorage.setItem('mochiStudy',JSON.stringify(data));syncNativeWidget()}syncNativeWidget();
 function tab(id){document.querySelectorAll('.tab,nav button').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelector(`[data-id="${id}"]`).classList.add('active');render()}
 function moveWeek(n){week=plus(week,n);localStorage.setItem('mochiSelectedWeek',week);renderSchedule()}
 function saveLesson(e){e.preventDefault();data.lessons.push({id:'l'+Date.now(),date:$('ldate').value,title:$('ltitle').value,time:$('ltime').value,room:$('lroom').value});save();lessonDialog.close();e.target.reset();render()}
