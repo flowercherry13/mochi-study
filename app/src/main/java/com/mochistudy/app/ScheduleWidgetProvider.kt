@@ -33,25 +33,30 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
             var title = "Открой Mochi Study 🍡"
             var detail = "Синхронизируй расписание в приложении"
             try {
-                val lessons = JSONArray(raw ?: "[]")
-                var bestStart = "99:99"
-                var foundToday = false
-                for (i in 0 until lessons.length()) {
-                    val item = lessons.getJSONObject(i)
-                    if (item.optString("date") != today) continue
-                    foundToday = true
-                    val fullTime = item.optString("time").trim()
-                    val start = fullTime.substringBefore("–").substringBefore("-").trim()
-                    if (start.matches(Regex("\\d{2}:\\d{2}")) && start >= now && start < bestStart) {
-                        bestStart = start
-                        title = item.optString("title", "Занятие")
-                        val room = item.optString("room").ifBlank { "аудитория не указана" }
-                        detail = "$fullTime · $room"
+                if (raw == null) {
+                    val status = prefs.getString("sync_status", null)
+                    if (!status.isNullOrBlank()) detail = "Синхронизация: $status"
+                } else {
+                    val lessons = JSONArray(raw)
+                    var bestStart = "99:99"
+                    var foundToday = false
+                    for (i in 0 until lessons.length()) {
+                        val item = lessons.getJSONObject(i)
+                        if (item.optString("date") != today) continue
+                        foundToday = true
+                        val fullTime = item.optString("time").trim()
+                        val start = fullTime.substringBefore("–").substringBefore("-").trim()
+                        if (start.matches(Regex("\\d{2}:\\d{2}")) && start >= now && start < bestStart) {
+                            bestStart = start
+                            title = item.optString("title", "Занятие")
+                            val room = item.optString("room").ifBlank { "аудитория не указана" }
+                            detail = "$fullTime · $room"
+                        }
                     }
-                }
-                if (bestStart == "99:99" && raw != null) {
-                    title = if (foundToday) "На сегодня пар больше нет 🌸" else "Сегодня занятий нет 🌸"
-                    detail = "Хорошего дня!"
+                    if (bestStart == "99:99") {
+                        title = if (foundToday) "На сегодня пар больше нет 🌸" else "Сегодня занятий нет 🌸"
+                        detail = "Расписание синхронизировано"
+                    }
                 }
             } catch (_: Exception) {
                 title = "Не удалось прочитать расписание"
