@@ -20,7 +20,33 @@ class MainActivity : Activity() {
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.allowFileAccess = true
-        webView.webViewClient = WebViewClient()
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                view?.evaluateJavascript(
+                    """(function() {
+                        function syncMochiSchedule() {
+                            try {
+                                var saved = JSON.parse(localStorage.getItem('mochiStudy') || '{}');
+                                if (saved.lessons && window.MochiAndroid) {
+                                    window.MochiAndroid.saveSchedule(JSON.stringify(saved.lessons));
+                                }
+                            } catch (e) {}
+                        }
+                        if (!Storage.prototype.__mochiStudyPatched) {
+                            var originalSetItem = Storage.prototype.setItem;
+                            Storage.prototype.setItem = function(key, value) {
+                                originalSetItem.apply(this, arguments);
+                                if (key === 'mochiStudy') syncMochiSchedule();
+                            };
+                            Storage.prototype.__mochiStudyPatched = true;
+                        }
+                        syncMochiSchedule();
+                    })();""",
+                    null
+                )
+            }
+        }
         webView.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
                 view: WebView?,
